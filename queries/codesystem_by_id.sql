@@ -1,10 +1,16 @@
-﻿with 
+﻿CREATE OR REPLACE FUNCTION fhir_read_resource(query json)
+  RETURNS json AS
+$BODY$
+begin
+return (
+
+with 
 
 last_ver as ( -- Беру последнюю версию справочника
  select 
   rbv.id
  from mdm_refbook_version rbv 
- where rbv.refbook_id = /*codesystem_id*/ 37116 
+ where rbv.refbook_id::text = (query ->> 'id')::text
  order by rbv.id desc limit 1
 ),
 
@@ -65,7 +71,6 @@ ggd as ( -- сгруппированные данные (json set по всем 
  select '{' || string_agg(l, ',') || '}' l from gd group by id
 )
 
--- select '"concept": [' || string_agg(l, ',') || ']' l from ggd -- concept
 select 
 
  concat(
@@ -81,16 +86,22 @@ select
    ', "count": "' || (select count(1) from ggd) || '"',
    (select ', "concept": [' || string_agg(l, ',') || ']' from ggd),
  '}'  
- )
+ )::json val
 from valid_list vl
 join mdm_refbook_version rbv on rbv.id = vl.vid
 join mdm_refbook rb on rb.id = rbv.refbook_id
 join mdm_refbook_source rbsc on rbsc.id = rb.source_id
 
+);
 
+end;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION fhir_read_resource(json)
+  OWNER TO fhir;
 
-
-
+select fhir_read_resource('{"resourceType":"CodeSystem", "id": "37116"}'::json)
 
 
 
