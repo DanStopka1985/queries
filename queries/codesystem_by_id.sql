@@ -101,7 +101,8 @@ $BODY$
 ALTER FUNCTION fhir_read_resource(json)
   OWNER TO fhir;
 
-select fhir_read_resource('{"resourceType":"CodeSystem", "id": "37116"}'::json)
+-- example
+-- select fhir_read_resource('{"resourceType":"CodeSystem", "id": "37116"}'::json)
 
 
 
