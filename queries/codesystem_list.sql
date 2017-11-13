@@ -1,8 +1,10 @@
-﻿--fhir_codesystem_search
+﻿-- fhir_codesystem_search
 
--- последние версии
--- c уникальными колонками (=1)
--- отображаемая колонка (<=1)
+CREATE OR REPLACE FUNCTION fhir_codesystem_search(query json)
+  RETURNS json AS
+$BODY$
+begin
+return (
 
 with last_ver as ( -- список последних версий
  select 
@@ -21,9 +23,54 @@ data as (
  select rbv.id, rbv.refbook_id from valid_list vl
  join mdm_refbook_version rbv on rbv.id = vl.id
  join mdm_refbook rb on rb.id = rbv.refbook_id
- -- фильтры, сортировки, paging
- limit 10
+ -- фильтры
+),
+
+ready_data as (
+ select refbook_id id from data
+ -- сортировка, paging 
+ limit 10 offset 0
 )
 
-select refbook_id, fhir_get_codesystem_by_id(refbook_id) from data
- 
+select 
+(
+ '{' ||
+ '"resourceType": "Bundle"' ||
+ ',"type": "searchset"' ||
+ ',"total": ' || (select count(1) from data)::text ||
+ ',"entry": [' || string_agg(fhir_get_codesystem_by_id(id)::text, ', ') || ']'
+ '}' 
+)::json val
+  
+from ready_data
+
+);
+
+end;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION fhir_search(query json)
+  RETURNS json AS
+$BODY$
+begin
+return (
+ select 
+  case 
+   when (query ->> 'resourceType') = 'CodeSystem' then fhir_codesystem_search(query) 
+   else '{}'
+  end val 
+);
+
+end;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
