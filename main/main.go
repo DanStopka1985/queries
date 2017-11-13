@@ -12,7 +12,7 @@ import (
 
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
-	//router.HandleFunc("/nci/fhir/{resourceType}", dao.GetResourceSearchResult)
+	router.HandleFunc("/nci/fhir/{resourceType}", dao.GetResourceSearchResult)
 	router.HandleFunc("/nci/fhir/{resourceType}/{id}", dao.GetResourceById)
 	//router.HandleFunc("/nci/fhir/{resourceType}/{id}/_history", dao.GetResourceHistory)
 	//router.HandleFunc("/nci/fhir/{resourceType}/{id}/_history/{vid}", dao.GetResourceHistoryById)

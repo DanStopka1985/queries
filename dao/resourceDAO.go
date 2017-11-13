@@ -7,14 +7,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
-/*func GetResourceSearchResult(w http.ResponseWriter, r *http.Request) {
+func GetResourceSearchResult(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	resourceSearch := &ResourceSearch{ResourceType: vars["resourceType"], QueryString: r.URL.RawQuery}
 	params, err := json.Marshal(resourceSearch)
 	P(err)
 
-	CommonReturn(`SET plv8.start_proc = 'plv8_init'; select fhir_search::jsonb val from fhir_search('` + string(params) + `');`, w)
-}*/
+	println(r.URL.RawQuery);
+	CommonReturn(`select fhir_search::jsonb val from fhir_search('` + string(params) + `');`, w)
+}
 
 func GetResourceById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
