@@ -1,4 +1,4 @@
-﻿CREATE OR REPLACE FUNCTION fhir_read_resource(query json)
+﻿CREATE OR REPLACE FUNCTION fhir_get_codesystem_by_id(cs_id integer)
   RETURNS json AS
 $BODY$
 begin
@@ -10,7 +10,7 @@ last_ver as ( -- Беру последнюю версию справочника
  select 
   rbv.id
  from mdm_refbook_version rbv 
- where rbv.refbook_id::text = (query ->> 'id')::text
+ where rbv.refbook_id::text = (cs_id)::text
  order by rbv.id desc limit 1
 ),
 
@@ -43,9 +43,9 @@ data as ( -- данные для concept в виде компонентов json
  select 
   r.id,
   case 
-   when is_unique_key then '"code": "' || rc.value || '"' 
-   when is_display_name then '"display": "' || rc.value || '"' 
-   else '{"code": "' || c.name || '", "valueString": "' || rc.value || '"}' 
+   when is_unique_key then '"code": "' || replace(rc.value, '"', '\"') || '"' 
+   when is_display_name then '"display": "' || replace(rc.value, '"', '\"') || '"' 
+   else '{"code": "' || replace(c.name, '"', '\"') || '", "valueString": "' || replace(rc.value, '"', '\"') || '"}' 
   end f,
   case when is_unique_key or is_display_name then 0 else 1 end l  
  from mdm_record_column rc
@@ -93,18 +93,33 @@ join mdm_refbook rb on rb.id = rbv.refbook_id
 join mdm_refbook_source rbsc on rbsc.id = rb.source_id
 
 );
+end;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+--select fhir_get_codesystem_by_id(37116)
+
+CREATE OR REPLACE FUNCTION fhir_read_resource(query json)
+  RETURNS json AS
+$BODY$
+begin
+return (
+select 
+ case 
+  when (query ->> 'resourceType') = 'CodeSystem' then fhir_get_codesystem_by_id((query ->> 'id')::integer)
+  else '{}'
+ end val
+);
 
 end;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION fhir_read_resource(json)
-  OWNER TO fhir;
 
--- example
--- select fhir_read_resource('{"resourceType":"CodeSystem", "id": "37116"}'::json)
+--select fhir_read_resource('{"resourceType":"CodeSystem1", "id": "37116"}'::json)
 
 
-
+--select position('asd=' in 'name=foo&asd=dsa') + 4 > 4
 
 
