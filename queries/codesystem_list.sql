@@ -7,11 +7,13 @@ declare _params text;
         __count integer;
         __page integer;
         _title text;
+        __id text;
 begin 
  _params := urldecode_arr(query ->> 'queryString');
  __count := coalesce(get_value_of_param(_params, '_count'), '3') ::integer;
  __page := coalesce(get_value_of_param(_params, '_page'), '0') ::integer;
  _title := get_value_of_param(_params, 'title');
+ __id := get_value_of_param(_params, '_id');
 
 return (
 
@@ -33,7 +35,9 @@ data as (
  join mdm_refbook_version rbv on rbv.id = vl.id
  join mdm_refbook rb on rb.id = rbv.refbook_id
  -- фильтры
- where (_title is null or upper(rb.full_name) like upper(_title) || '%')
+ where 
+  (_title is null or upper(rb.full_name) like upper(_title) || '%') and
+  (__id is null or __id = rb.id::text)
 ),
 
 ready_data as (
