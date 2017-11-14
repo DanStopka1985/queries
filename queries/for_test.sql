@@ -24,7 +24,7 @@ data as (
  join mdm_refbook_version rbv on rbv.id = vl.id
  join mdm_refbook rb on rb.id = rbv.refbook_id
  -- фильтры
- where (get_value_of_param(('{"resourceType":"CodeSystem","queryString":"_page=1\u0026_count=10\u0026title=t"}'::json ->> 'queryString'), 'title') is null or upper(rb.full_name) like upper(get_value_of_param(('{"resourceType":"CodeSystem","queryString":"_page=1\u0026_count=10\u0026title=t"}'::json ->> 'queryString'), 'title')) || '%')
+ where (upper(rb.full_name) like ('T%'))
 ),
 
 ready_data as (
@@ -45,3 +45,49 @@ select
 )::json val
 
 from ready_data
+
+
+
+--select upper(get_value_of_param(('{"resourceType":"CodeSystem","queryString":"_page=1\u0026_count=10\u0026title=t"}'::json ->> 'queryString'), 'title')) || '%'
+
+
+select urldecode_arr('title=%D0%9A')
+
+
+CREATE OR REPLACE FUNCTION urldecode_arr(url text)
+  RETURNS text AS
+$BODY$
+DECLARE ret text;
+
+BEGIN
+ BEGIN
+
+    WITH STR AS (
+      SELECT
+      
+      -- array with all non encoded parts, prepend with '' when the string start is encoded
+      case when $1 ~ '^%[0-9a-fA-F][0-9a-fA-F]' 
+           then array[''] 
+           end 
+      || regexp_split_to_array ($1,'(%[0-9a-fA-F][0-9a-fA-F])+', 'i') plain,
+      
+      -- array with all encoded parts
+      array(select (regexp_matches ($1,'((?:%[0-9a-fA-F][0-9a-fA-F])+)', 'gi'))[1]) encoded
+    )
+    SELECT  string_agg(plain[i] || coalesce( convert_from(decode(replace(encoded[i], '%',''), 'hex'), 'utf8'),''),'')
+    FROM STR, 
+      (SELECT  generate_series(1, array_upper(encoded,1)+2) i FROM STR)blah
+
+    INTO ret;
+
+  EXCEPTION WHEN OTHERS THEN  
+    raise notice 'failed: %',url;
+    return $1;
+  END;   
+
+  RETURN coalesce(ret,$1); -- when the string has no encoding;
+
+END;
+
+$BODY$
+  LANGUAGE plpgsql IMMUTABLE STRICT
