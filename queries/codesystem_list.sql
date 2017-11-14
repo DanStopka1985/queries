@@ -1,9 +1,36 @@
-﻿-- fhir_codesystem_search
+﻿--select fhir_search::jsonb val from fhir_search('{"resourceType":"CodeSystem","queryString":"_page=2"}');
+
+
+-- fhir_codesystem_search
+CREATE OR REPLACE FUNCTION get_value_of_param(params text, key text)
+RETURNS text as
+$BODY$
+begin
+return (
+ with t as (
+  select string_to_array(regexp_split_to_table(params, '&'), '=') a
+ )
+
+ select a[2] from t
+ where a[1] = key
+ limit 1
+);
+end;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+
 
 CREATE OR REPLACE FUNCTION fhir_codesystem_search(query json)
   RETURNS json AS
 $BODY$
-begin
+declare __count integer;
+declare __page integer;
+begin 
+ __count := coalesce(get_value_of_param((query ->> 'queryString'), '_count'), '3') ::integer;
+ __page := coalesce(get_value_of_param((query ->> 'queryString'), '_page'), '0') ::integer;
+
 return (
 
 with last_ver as ( -- список последних версий
@@ -29,7 +56,8 @@ data as (
 ready_data as (
  select refbook_id id from data
  -- сортировка, paging 
- limit 10 offset 0
+ limit __count
+ offset __page
 )
 
 select 
@@ -74,3 +102,6 @@ end;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
+
+
+--select coalesce(get_value_of_param('a=2&b=3&c=345', 'd'), '10')

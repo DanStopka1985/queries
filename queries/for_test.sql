@@ -1,10 +1,13 @@
-﻿with 
+﻿--select fhir_get_codesystem_by_id(37145)
+
+
+with 
 
 last_ver as ( -- Беру последнюю версию справочника
  select 
   rbv.id
  from mdm_refbook_version rbv 
- where rbv.refbook_id::text = (37967)::text
+ where rbv.refbook_id::text = (37145)::text
  order by rbv.id desc limit 1
 ),
 
@@ -38,7 +41,7 @@ data as ( -- данные для concept в виде компонентов json
   r.id,
   case 
    when is_unique_key then '"code": "' || rc.value || '"' 
-   when is_display_name then '"display": "' || rc.value || '"' 
+   when is_display_name then '"display": "' || replace(rc.value, '"', '\"') || '"' 
    else '{"code": "' || c.name || '", "valueString": "' || rc.value || '"}' 
   end f,
   case when is_unique_key or is_display_name then 0 else 1 end l  
@@ -80,7 +83,7 @@ select
    ', "count": "' || (select count(1) from ggd) || '"',
    (select ', "concept": [' || string_agg(l, ',') || ']' from ggd),
  '}'  
- )::json val
+ )
 from valid_list vl
 join mdm_refbook_version rbv on rbv.id = vl.vid
 join mdm_refbook rb on rb.id = rbv.refbook_id

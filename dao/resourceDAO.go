@@ -14,7 +14,9 @@ func GetResourceSearchResult(w http.ResponseWriter, r *http.Request) {
 	P(err)
 
 	println(r.URL.RawQuery);
-	CommonReturn(`select fhir_search::jsonb val from fhir_search('` + string(params) + `');`, w)
+	q := `select fhir_search::jsonb val from fhir_search('` + string(params) + `');`
+	println(q)
+	CommonReturn(q, w)
 }
 
 func GetResourceById(w http.ResponseWriter, r *http.Request) {

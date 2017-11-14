@@ -43,9 +43,9 @@ data as ( -- данные для concept в виде компонентов json
  select 
   r.id,
   case 
-   when is_unique_key then '"code": "' || rc.value || '"' 
-   when is_display_name then '"display": "' || rc.value || '"' 
-   else '{"code": "' || c.name || '", "valueString": "' || rc.value || '"}' 
+   when is_unique_key then '"code": "' || replace(rc.value, '"', '\"') || '"' 
+   when is_display_name then '"display": "' || replace(rc.value, '"', '\"') || '"' 
+   else '{"code": "' || replace(c.name, '"', '\"') || '", "valueString": "' || replace(rc.value, '"', '\"') || '"}' 
   end f,
   case when is_unique_key or is_display_name then 0 else 1 end l  
  from mdm_record_column rc
