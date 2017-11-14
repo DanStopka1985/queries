@@ -1,90 +1,47 @@
-﻿--select fhir_get_codesystem_by_id(37145)
+﻿/*__count := coalesce(get_value_of_param(('{"resourceType":"CodeSystem","queryString":"_page=1\u0026_count=10\u0026title=t"}'::json ->> 'queryString'), '_count'), '3') ::integer;
+ __page := coalesce(get_value_of_param(('{"resourceType":"CodeSystem","queryString":"_page=1\u0026_count=10\u0026title=t"}'::json ->> 'queryString'), '_page'), '0') ::integer;
+ _title := get_value_of_param(('{"resourceType":"CodeSystem","queryString":"_page=1\u0026_count=10\u0026title=t"}'::json ->> 'queryString'), 'title');
+*/
+--'{"resourceType":"CodeSystem","queryString":"_page=1\u0026_count=10\u0026title=t"}'
 
+--select fhir_get_codesystem_by_id(37145)
 
-with 
-
-last_ver as ( -- Беру последнюю версию справочника
+with last_ver as ( -- список последних версий
  select 
-  rbv.id
- from mdm_refbook_version rbv 
- where rbv.refbook_id::text = (37145)::text
- order by rbv.id desc limit 1
+  rbv.refbook_id, max(37145) id
+ from mdm_refbook_version rbv
+ group by rbv.refbook_id
 ),
 
-valid_list as ( -- Есть уникальная колонка, притом только одна. И не более одной отображаемой колонки. -- здесь список из одного элемента
- select 
-  lv.id vid
- from last_ver lv 
+valid_list as (
+ select lv.id from last_ver lv
  join mdm_refbook_column rbc on rbc.refbook_version_id = lv.id
  group by lv.id having sum(case when is_display_name then 1 else 0 end) <= 1 and sum(case when is_unique_key then 1 else 0 end) = 1
 ),
 
-_columns as ( -- колонки
- select 
-  rbc.id,
-  rbc.is_unique_key,
-  rbc.is_display_name,
-  rbc.name  
- from valid_list vl 
- join mdm_refbook_column rbc on rbc.refbook_version_id = vl.vid 
+data as (
+ select rbv.id, rbv.refbook_id from valid_list vl
+ join mdm_refbook_version rbv on rbv.id = vl.id
+ join mdm_refbook rb on rb.id = rbv.refbook_id
+ -- фильтры
+ where (get_value_of_param(('{"resourceType":"CodeSystem","queryString":"_page=1\u0026_count=10\u0026title=t"}'::json ->> 'queryString'), 'title') is null or upper(rb.full_name) like upper(get_value_of_param(('{"resourceType":"CodeSystem","queryString":"_page=1\u0026_count=10\u0026title=t"}'::json ->> 'queryString'), 'title')) || '%')
 ),
 
-_records as ( -- записи
- select 
-  id
- from mdm_record rec 
- join valid_list c on c.vid = rec.refbook_version_id
-),
-
-data as ( -- данные для concept в виде компонентов json
- select 
-  r.id,
-  case 
-   when is_unique_key then '"code": "' || rc.value || '"' 
-   when is_display_name then '"display": "' || replace(rc.value, '"', '\"') || '"' 
-   else '{"code": "' || c.name || '", "valueString": "' || rc.value || '"}' 
-  end f,
-  case when is_unique_key or is_display_name then 0 else 1 end l  
- from mdm_record_column rc
- join _records r on rc.record_id = r.id
- join _columns c on rc.column_id = c.id
-
- order by r.id, case when is_unique_key then 0 when is_display_name then 1 else 2 end
-),
-
-gd as ( -- сгруппированные данные (json) (код, отображение и проперти)
- select 
-  id, 
-  case 
-   when l = 0 then string_agg(f, ',')
-   when l = 1 then
-    '"properties": [' || string_agg(f, ',') || ']' 
-  end l
- from data 
- group by id, l order by id, l
-),
-
-ggd as ( -- сгруппированные данные (json set по всем записям)(код, отображение и проперти)
- select '{' || string_agg(l, ',') || '}' l from gd group by id
+ready_data as (
+ select refbook_id id from data
+ -- сортировка, paging 
+ -- limit __count
+ -- offset __page
 )
 
 select 
+(
+ '{' ||
+ '"resourceType": "Bundle"' ||
+ ',"type": "searchset"' ||
+ ',"total": ' || (select count(1) from data)::text ||
+ ',"entry": [' || string_agg(fhir_get_codesystem_by_id(id)::text, ', ') || ']'
+ '}' 
+)::json val
 
- concat(
- '{',
-   '"resourceType": "CodeSystem"'
-   ', "id": "' || rb.id || '"',
-   ', "date": "' || rbv.date || '"',
-   ', "status": "unknown"',
-   ', "content": "complete"'   
-   ', "version": "' || rbv.version || '"', 
-   ', "title": "' || rb.full_name || '"', 
-   ', "publisher": "' || rbsc.name || '"',
-   ', "count": "' || (select count(1) from ggd) || '"',
-   (select ', "concept": [' || string_agg(l, ',') || ']' from ggd),
- '}'  
- )
-from valid_list vl
-join mdm_refbook_version rbv on rbv.id = vl.vid
-join mdm_refbook rb on rb.id = rbv.refbook_id
-join mdm_refbook_source rbsc on rbsc.id = rb.source_id
+from ready_data

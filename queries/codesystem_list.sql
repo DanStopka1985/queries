@@ -4,10 +4,12 @@ CREATE OR REPLACE FUNCTION fhir_codesystem_search(query json)
   RETURNS json AS
 $BODY$
 declare __count integer;
-declare __page integer;
+        __page integer;
+        _title text;
 begin 
  __count := coalesce(get_value_of_param((query ->> 'queryString'), '_count'), '3') ::integer;
  __page := coalesce(get_value_of_param((query ->> 'queryString'), '_page'), '0') ::integer;
+ _title := get_value_of_param((query ->> 'queryString'), 'title');
 
 return (
 
@@ -29,6 +31,7 @@ data as (
  join mdm_refbook_version rbv on rbv.id = vl.id
  join mdm_refbook rb on rb.id = rbv.refbook_id
  -- фильтры
+ where (_title is null or upper(rb.full_name) like upper(_title) || '%')
 ),
 
 ready_data as (
