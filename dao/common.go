@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"database/sql"
 	ss "../settings"
+	"encoding/json"
 )
 
 var s = ss.GetSettings()
 var fhirPsqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", s.DbFhirHost, s.DbFhirPort, s.DbFhirUser, s.DbFhirPassword, s.DbFhirName)
 var fhirDb, errFhirCon = sql.Open("postgres", fhirPsqlInfo)
-
 
 func setHeaders(w http.ResponseWriter) http.ResponseWriter  {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -18,22 +18,22 @@ func setHeaders(w http.ResponseWriter) http.ResponseWriter  {
 	return w
 }
 
-/*func getParams(r *http.Request) string {
-	pKeys := [21]string{"lpu", "dt1", "dt2", "rdt1", "rdt2" , "vdt1", "vdt2", "case_type", "district", "spec", "reg_dt1", "reg_dt2", "ref_dt1", "ref_dt2",
-		"src_spec", "src_pos", "ref_type", "src_lpu", "trg_spec", "trg_lpu", "ctrl"}
-	params := ""
-	for i := 0; i < len(pKeys); i++ {
-		if r.FormValue(pKeys[i]) != "" {
-			if len(params) > 0 {params += ","}
-			params += pKeys[i] + " := '" + r.FormValue(pKeys[i]) + "'"
-		}
+
+func CommonReturn(query string, w http.ResponseWriter){
+	var in []byte
+
+	rows := getRows(query)
+	for rows.Next() {
+		var val sql.NullString
+		rows.Scan(&val)
+		in = []byte(val.String)
 	}
-
-	return params;
-}*/
-
-
-
+	var raw map[string]interface{}
+	json.Unmarshal(in, &raw)
+	out, _ := json.Marshal(raw)
+	setHeaders(w)
+	w.Write(out)
+}
 
 func getRows(query string) (*sql.Rows) {
 	var err error

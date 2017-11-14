@@ -3,7 +3,6 @@ package dao
 import (
 	"net/http"
 	"encoding/json"
-	"database/sql"
 	"github.com/gorilla/mux"
 )
 
@@ -56,19 +55,3 @@ func GetExpandValueSetById(w http.ResponseWriter, r *http.Request) {
 	CommonReturn(`SET plv8.start_proc = 'plv8_init'; select fhir_expand_valueset::jsonb val from fhir_expand_valueset('` + string(params) + `');`, w)
 }
 */
-
-func CommonReturn(query string, w http.ResponseWriter){
-	var in []byte
-
-	rows := getRows(query)
-	for rows.Next() {
-		var val sql.NullString
-		rows.Scan(&val)
-		in = []byte(val.String)
-	}
-	var raw map[string]interface{}
-	json.Unmarshal(in, &raw)
-	out, _ := json.Marshal(raw)
-	setHeaders(w)
-	w.Write(out)
-}
