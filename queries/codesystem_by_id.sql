@@ -98,7 +98,8 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 
---select fhir_get_codesystem_by_id(37116)
+-- example
+-- select fhir_get_codesystem_by_id(37116)
 
 CREATE OR REPLACE FUNCTION fhir_read_resource(query json)
   RETURNS json AS
@@ -118,6 +119,6 @@ $BODY$
   COST 100;
 
 -- example
--- select fhir_read_resource('{"resourceType":"CodeSystem1", "id": "37116"}'::json)
+-- select fhir_read_resource('{"resourceType":"CodeSystem", "id": "37116"}'::json)
 
 
