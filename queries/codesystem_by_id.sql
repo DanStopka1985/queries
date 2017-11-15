@@ -77,7 +77,7 @@ select
  '{',
    '"resourceType": "CodeSystem"'
    ', "id": "' || rb.id || '"',
-   ', "date": "' || rbv.date || '"',
+   ', "date": "' || to_char(rbv.date, 'yyyy-mm-dd') || '"',
    ', "status": "unknown"',
    ', "content": "complete"'   
    ', "version": "' || rbv.version || '"', 

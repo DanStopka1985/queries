@@ -7,6 +7,7 @@ declare _params text;
         __count integer;
         __page integer;
         _title text;
+        _date text;
         __id text;
 begin 
  _params := urldecode_arr(query ->> 'queryString');
@@ -14,6 +15,7 @@ begin
  __page := coalesce(get_value_of_param(_params, '_page'), '0') ::integer;
  _title := get_value_of_param(_params, 'title');
  __id := get_value_of_param(_params, '_id');
+ _date := get_value_of_param(_params, 'date');
 
 return (
 
@@ -37,7 +39,8 @@ data as (
  -- фильтры
  where 
   (_title is null or upper(rb.full_name) like upper(_title) || '%') and
-  (__id is null or __id = rb.id::text)
+  (__id is null or __id = rb.id::text) and
+  (_date is null or to_char(rbv.date, 'yyyy-mm-dd') like _date || '%')
 ),
 
 ready_data as (
