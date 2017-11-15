@@ -117,9 +117,7 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 
---select fhir_read_resource('{"resourceType":"CodeSystem1", "id": "37116"}'::json)
-
-
---select position('asd=' in 'name=foo&asd=dsa') + 4 > 4
+-- example
+-- select fhir_read_resource('{"resourceType":"CodeSystem1", "id": "37116"}'::json)
 
 

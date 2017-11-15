@@ -9,6 +9,8 @@ declare _params text;
         _title text;
         _date text;
         __id text;
+        _publisher text;
+        _status text;
 begin 
  _params := urldecode_arr(query ->> 'queryString');
  __count := coalesce(get_value_of_param(_params, '_count'), '3') ::integer;
@@ -16,6 +18,8 @@ begin
  _title := get_value_of_param(_params, 'title');
  __id := get_value_of_param(_params, '_id');
  _date := get_value_of_param(_params, 'date');
+ _publisher := get_value_of_param(_params, 'publisher');
+ _status := get_value_of_param(_params, 'status');
 
 return (
 
@@ -36,11 +40,14 @@ data as (
  select rbv.id, rbv.refbook_id from valid_list vl
  join mdm_refbook_version rbv on rbv.id = vl.id
  join mdm_refbook rb on rb.id = rbv.refbook_id
+ left join mdm_refbook_source rbsc on rbsc.id = rb.source_id
  -- фильтры
  where 
   (_title is null or upper(rb.full_name) like upper(_title) || '%') and
   (__id is null or __id = rb.id::text) and
-  (_date is null or to_char(rbv.date, 'yyyy-mm-dd') like _date || '%')
+  (_date is null or to_char(rbv.date, 'yyyy-mm-dd') like _date || '%') and
+  (_publisher is null or rbsc.name like _publisher || '%') and
+  (_status is null or _status = 'unknown')
 ),
 
 ready_data as (
