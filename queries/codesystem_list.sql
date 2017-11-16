@@ -24,9 +24,7 @@ begin
  _status := get_value_of_param(_params, 'status');
  __sort := get_value_of_param(_params, '_sort');
 
---return 
-
-
+execute '
 
 with last_ver as ( -- список последних версий
  select 
@@ -48,32 +46,35 @@ data as (
  left join mdm_refbook_source rbsc on rbsc.id = rb.source_id
  -- фильтры
  where 
-  (_title is null or upper(rb.full_name) like upper(_title) || '%') and
-  (__id is null or __id = rb.id::text) and
-  (_date is null or to_char(rbv.date, 'yyyy-mm-dd') like _date || '%') and
-  (_publisher is null or rbsc.name like _publisher || '%') and
-  (_status is null or _status = 'unknown')
+  ($1 is null or upper(rb.full_name) like upper($1) || ''%'') and
+  ($2 is null or $2 = rb.id::text) and
+  ($3 is null or to_char(rbv.date, ''yyyy-mm-dd'') like $3 || ''%'') and
+  ($4 is null or rbsc.name like $4 || ''%'') and
+  ($5 is null or $5 = ''unknown'')
 ),
 
 ready_data as (
  select refbook_id id from data
  -- сортировка, paging 
- limit __count
- offset __page
+ limit $6
+ offset $7
 )
 
 select 
 (
- '{' ||
- '"resourceType": "Bundle"' ||
- ',"type": "searchset"' ||
- ',"total": ' || (select count(1) from data)::text ||
- ',"entry": [' || string_agg(fhir_get_codesystem_by_id(id)::text, ', ') || ']'
- '}' 
-)::json val into r
+ ''{'' ||
+ ''"resourceType": "Bundle"'' ||
+ '',"type": "searchset"'' ||
+ '',"total": '' || (select count(1) from data)::text ||
+ '',"entry": ['' || string_agg(fhir_get_codesystem_by_id(id)::text, '', '') || '']''
+ ''}'' 
+)::json val 
   
 from ready_data;
-
+'
+into r
+using _title, __id, _date, _publisher, _status, __count, __page
+;
 
 return r;
 
