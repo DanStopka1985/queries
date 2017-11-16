@@ -18,8 +18,7 @@ return (
 );
 end;
 $BODY$
-  LANGUAGE plpgsql VOLATILE
-  COST 100;
+  LANGUAGE plpgsql VOLATILE;
 
 -- example
 -- select urldecode_arr('title=%D0%9A')
@@ -60,4 +59,13 @@ BEGIN
 END;
 
 $BODY$
-  LANGUAGE plpgsql IMMUTABLE STRICT
+  LANGUAGE plpgsql IMMUTABLE STRICT;
+
+CREATE OR REPLACE FUNCTION fhir_sort_to_sql_order(src text)
+  RETURNS text AS
+$BODY$
+ BEGIN
+  return (select 'order by ' || regexp_replace(src, '-([^,]+)', '\1 desc', 'g'));
+ END;
+$BODY$
+  LANGUAGE plpgsql IMMUTABLE STRICT;

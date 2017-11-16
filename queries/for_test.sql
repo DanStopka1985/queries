@@ -91,3 +91,110 @@ END;
 
 $BODY$
   LANGUAGE plpgsql IMMUTABLE STRICT
+
+
+
+
+
+create table temp5 as
+select 2 a, 'a' b union all
+select 3 a, 'c' b union all
+select 1 a, 'b' b 
+
+select b, a from temp5
+order by 1
+
+
+DROP FUNCTION if exists temp_5(integer);
+CREATE OR REPLACE FUNCTION temp_5(_i_ text)
+  RETURNS integer AS
+$BODY$
+declare r integer;
+BEGIN
+
+ execute '
+ with t as (
+  select a, b from temp5 order by ' || _i_ || ' limit 1
+ )
+ select a from t
+ '
+ into r;
+
+return r;
+ 
+
+END;
+
+$BODY$
+  LANGUAGE plpgsql IMMUTABLE STRICT;
+
+
+select temp_5('a')
+
+
+
+
+
+
+
+ with t as (
+  select a, b from temp5 order by 1 limit 1
+ )
+
+ select a from t
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION fhir_sort_to_sql_order(src text)
+  RETURNS text AS
+$BODY$
+ BEGIN
+  return (select 'order by ' || regexp_replace(src, '-([^,]+)', '\1 desc', 'g'));
+ END;
+$BODY$
+  LANGUAGE plpgsql IMMUTABLE STRICT;
+
+
+select fhir_sort_to_sql_order('asd,-drd,sr')
+
+with 
+s as (
+ select regexp_split_to_table('asd,-drd,sr', ',') prm
+),
+
+q as (
+select 
+ case 
+  when prm like '-%' then substring(prm, 2, length(prm) - 1) || ' desc'
+  else prm || ' asc'
+ end prm
+from s
+)
+
+select 'order by ' || string_agg(prm, ', ') from q
+
+select regexp_replace('asd,-drd,sr', ',', '/1   ', 'g')
+
+--select regexp_replace('asd,-drd,sr', '([^,]+)', '\1  ', 'g')
+select 'order by ' || regexp_replace('asd,-drd,sr', '-([^,]+)', '\1 desc', 'g')
+
+
+
+
+select regexp_replace('abc$wanto&toremove#special~chars', '[^a-zA-Z]', '', 'g')
+
+select regexp_replace('abc$wanto&toremove#special~chars', '[^[:alpha:]]')
