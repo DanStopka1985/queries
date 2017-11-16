@@ -12,6 +12,7 @@ declare _params text;
         _publisher text;
         _status text;
         __sort text;
+        r json;
 begin 
  _params := urldecode_arr(query ->> 'queryString');
  __count := coalesce(get_value_of_param(_params, '_count'), '3') ::integer;
@@ -23,7 +24,9 @@ begin
  _status := get_value_of_param(_params, 'status');
  __sort := get_value_of_param(_params, '_sort');
 
-return (
+--return 
+
+
 
 with last_ver as ( -- список последних версий
  select 
@@ -67,11 +70,12 @@ select
  ',"total": ' || (select count(1) from data)::text ||
  ',"entry": [' || string_agg(fhir_get_codesystem_by_id(id)::text, ', ') || ']'
  '}' 
-)::json val
+)::json val into r
   
-from ready_data
+from ready_data;
 
-);
+
+return r;
 
 end;
 $BODY$
