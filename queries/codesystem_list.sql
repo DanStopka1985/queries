@@ -11,6 +11,7 @@ declare _params text;
         __id text;
         _publisher text;
         _status text;
+        __sort text;
 begin 
  _params := urldecode_arr(query ->> 'queryString');
  __count := coalesce(get_value_of_param(_params, '_count'), '3') ::integer;
@@ -20,6 +21,7 @@ begin
  _date := get_value_of_param(_params, 'date');
  _publisher := get_value_of_param(_params, 'publisher');
  _status := get_value_of_param(_params, 'status');
+ __sort := get_value_of_param(_params, '_sort');
 
 return (
 
@@ -76,7 +78,12 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 
------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
 
 CREATE OR REPLACE FUNCTION fhir_search(query json)
   RETURNS json AS
@@ -94,5 +101,6 @@ end;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
+
 
 --select coalesce(get_value_of_param('a=2&b=3&c=345', 'd'), '10')
