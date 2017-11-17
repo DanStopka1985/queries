@@ -29,21 +29,21 @@ execute '
 with last_ver as ( -- список последних версий
  select 
   rbv.refbook_id, max(rbv.id) id
- from mdm_refbook_version rbv
+ from cnm.refbook_version rbv
  group by rbv.refbook_id
 ),
 
 valid_list as (
  select lv.id from last_ver lv
- join mdm_refbook_column rbc on rbc.refbook_version_id = lv.id
+ join cnm.refbook_column rbc on rbc.refbook_version_id = lv.id
  group by lv.id having sum(case when is_display_name then 1 else 0 end) <= 1 and sum(case when is_unique_key then 1 else 0 end) = 1
 ),
 
 data as (
  select rbv.id, rbv.refbook_id, rb.full_name title, rb.id _id, to_char(rbv.date, ''yyyy-mm-dd'') "date", rbsc.name publisher, ''unknown'' status  from valid_list vl
- join mdm_refbook_version rbv on rbv.id = vl.id
- join mdm_refbook rb on rb.id = rbv.refbook_id
- left join mdm_refbook_source rbsc on rbsc.id = rb.source_id
+ join cnm.refbook_version rbv on rbv.id = vl.id
+ join cnm.refbook rb on rb.id = rbv.refbook_id
+ left join cnm.refbook_source rbsc on rbsc.id = rb.source_id
  -- фильтры
  where 
   ($1 is null or upper(rb.full_name) like upper($1) || ''%'') and

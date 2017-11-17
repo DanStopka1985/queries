@@ -9,7 +9,7 @@ with
 last_ver as ( -- Беру последнюю версию справочника
  select 
   rbv.id
- from mdm_refbook_version rbv 
+ from cnm.refbook_version rbv 
  where rbv.refbook_id::text = (cs_id)::text
  order by rbv.id desc limit 1
 ),
@@ -18,7 +18,7 @@ valid_list as ( -- Есть уникальная колонка, притом т
  select 
   lv.id vid
  from last_ver lv 
- join mdm_refbook_column rbc on rbc.refbook_version_id = lv.id
+ join cnm.refbook_column rbc on rbc.refbook_version_id = lv.id
  group by lv.id having sum(case when is_display_name then 1 else 0 end) <= 1 and sum(case when is_unique_key then 1 else 0 end) = 1
 ),
 
@@ -29,13 +29,13 @@ _columns as ( -- колонки
   rbc.is_display_name,
   rbc.name  
  from valid_list vl 
- join mdm_refbook_column rbc on rbc.refbook_version_id = vl.vid 
+ join cnm.refbook_column rbc on rbc.refbook_version_id = vl.vid 
 ),
 
 _records as ( -- записи
  select 
   id
- from mdm_record rec 
+ from cnm.record rec 
  join valid_list c on c.vid = rec.refbook_version_id
 ),
 
@@ -48,7 +48,7 @@ data as ( -- данные для concept в виде компонентов json
    else '{"code": ' || to_json(c.name) || ', "valueString": ' || to_json(rc.value) || '}' 
   end f,
   case when is_unique_key or is_display_name then 0 else 1 end l  
- from mdm_record_column rc
+ from cnm.record_column rc
  join _records r on rc.record_id = r.id
  join _columns c on rc.column_id = c.id
 
@@ -81,16 +81,16 @@ select
    ', "status": "unknown"',
    ', "content": "complete"'   
    ', "version": "' || rbv.version || '"', 
-   ', "title": "' || rb.full_name || '"', 
+   ', "title": "' || coalesce(rb.full_name,'') || '"',
    ', "publisher": "' || rbsc.name || '"',
    ', "count": "' || (select count(1) from ggd) || '"',
    (select ', "concept": [' || string_agg(l, ',') || ']' from ggd),
  '}'  
  )::json val
 from valid_list vl
-join mdm_refbook_version rbv on rbv.id = vl.vid
-join mdm_refbook rb on rb.id = rbv.refbook_id
-join mdm_refbook_source rbsc on rbsc.id = rb.source_id
+join cnm.refbook_version rbv on rbv.id = vl.vid
+join cnm.refbook rb on rb.id = rbv.refbook_id
+join cnm.refbook_source rbsc on rbsc.id = rb.source_id
 
 );
 end;
