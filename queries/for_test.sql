@@ -268,10 +268,155 @@ $BODY$
  BEGIN
 
   return (
-    select replace(replace(src, '"', '\"'), chr(10), '\' || chr(10))
+    select replace(replace(src, '"', '\"'), chr(10), chr(10))
   );
  END;
 $BODY$
   LANGUAGE plpgsql IMMUTABLE STRICT;
 
 
+
+
+
+
+
+
+
+
+
+
+select to_json('aaa'::text)
+
+
+select * from mdm_refbook
+where full_name like '%4f8805b52bcfa52%'
+
+ limit 10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+with last_ver as ( -- список последних версий
+
+	 select 
+
+	  rbv.refbook_id, max(rbv.id) id
+
+	 from mdm_refbook_version rbv
+
+	 group by rbv.refbook_id
+
+	),
+
+	
+
+	valid_list as (
+
+	 select lv.id from last_ver lv
+
+	 join mdm_refbook_column rbc on rbc.refbook_version_id = lv.id
+
+	 group by lv.id having sum(case when is_display_name then 1 else 0 end) <= 1 and sum(case when is_unique_key then 1 else 0 end) = 1
+
+	),
+
+	
+
+	data as (
+
+	 select rbv.id, rbv.refbook_id, rb.full_name title from valid_list vl
+
+	 join mdm_refbook_version rbv on rbv.id = vl.id
+
+	 join mdm_refbook rb on rb.id = rbv.refbook_id
+
+	 left join mdm_refbook_source rbsc on rbsc.id = rb.source_id
+
+	 -- фильтры
+
+	 --where 
+
+	  /*($1 is null or upper(rb.full_name) like upper($1) || '%') and
+
+	  ($2 is null or $2 = rb.id::text) and
+
+	  ($3 is null or to_char(rbv.date, 'yyyy-mm-dd') like $3 || '%') and
+
+	  ($4 is null or rbsc.name like $4 || '%') and
+
+	  ($5 is null or $5 = 'unknown')*/
+
+	),
+
+	
+
+	ready_data as (
+
+	 select refbook_id id from data
+
+	 -- сортировка, paging 
+
+	
+
+	 order by title desc 
+
+	
+
+	 limit 11
+
+	 offset 0
+
+	)
+
+	
+
+	select 
+id
+	/*(
+
+	 '{' ||
+
+	 '"resourceType": "Bundle"' ||
+
+	 ',"type": "searchset"' ||
+
+	 ',"total": ' || (select count(1) from data)::text ||
+
+	 ',"entry": [' || string_agg(fhir_get_codesystem_by_id(id)::text, ', ') || ']'
+
+	 '}' 
+
+	) val */
+
+	  
+
+	from ready_data;
+
+
+
+select fhir_get_codesystem_by_id(35542)
