@@ -40,7 +40,7 @@ valid_list as (
 ),
 
 data as (
- select rbv.id, rbv.refbook_id, rb.full_name title from valid_list vl
+ select rbv.id, rbv.refbook_id, rb.full_name title, rb.id _id, to_char(rbv.date, ''yyyy-mm-dd'') "date", rbsc.name publisher, ''unknown'' status  from valid_list vl
  join mdm_refbook_version rbv on rbv.id = vl.id
  join mdm_refbook rb on rb.id = rbv.refbook_id
  left join mdm_refbook_source rbsc on rbsc.id = rb.source_id
