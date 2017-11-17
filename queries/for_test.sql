@@ -134,6 +134,23 @@ select temp_5('a')
 
 
 
+CREATE OR REPLACE FUNCTION get_stuff(_param text, _orderby text, _limit int)
+  RETURNS SETOF stuff AS
+$BODY$
+BEGIN
+
+RETURN QUERY EXECUTE '
+    SELECT *
+    FROM   stuff
+    WHERE  col = $1
+    ORDER  BY ' || quote_ident(_orderby) || '
+    LIMIT  $2'
+USING _param, _limit;
+
+END;
+$BODY$
+  LANGUAGE plpgsql;
+
 
 
 
@@ -198,3 +215,63 @@ select 'order by ' || regexp_replace('asd,-drd,sr', '-([^,]+)', '\1 desc', 'g')
 select regexp_replace('abc$wanto&toremove#special~chars', '[^a-zA-Z]', '', 'g')
 
 select regexp_replace('abc$wanto&toremove#special~chars', '[^[:alpha:]]')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION fhir_sort_to_sql_order(src text)
+  RETURNS text AS
+$BODY$
+ BEGIN
+  if coalesce(src, '') = '' then return '';
+  end if;
+  return (
+   select 
+    'order by ' || 
+     regexp_replace(src, '-([^,]+)', '\1 desc', 'g')
+  );
+ END;
+$BODY$
+  LANGUAGE plpgsql IMMUTABLE STRICT;
+
+
+
+
+
+select fhir_sort_to_sql_order('')
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION esc(src text)
+  RETURNS text AS
+$BODY$
+ BEGIN
+
+  return (
+    select replace(replace(src, '"', '\"'), chr(10), '\' || chr(10))
+  );
+ END;
+$BODY$
+  LANGUAGE plpgsql IMMUTABLE STRICT;
+
+

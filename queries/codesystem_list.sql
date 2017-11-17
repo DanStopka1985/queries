@@ -22,7 +22,7 @@ begin
  _date := get_value_of_param(_params, 'date');
  _publisher := get_value_of_param(_params, 'publisher');
  _status := get_value_of_param(_params, 'status');
- __sort := get_value_of_param(_params, '_sort');
+ __sort := coalesce(get_value_of_param(_params, '_sort'), '');
 
 execute '
 
@@ -40,7 +40,7 @@ valid_list as (
 ),
 
 data as (
- select rbv.id, rbv.refbook_id from valid_list vl
+ select rbv.id, rbv.refbook_id, rb.full_name title from valid_list vl
  join mdm_refbook_version rbv on rbv.id = vl.id
  join mdm_refbook rb on rb.id = rbv.refbook_id
  left join mdm_refbook_source rbsc on rbsc.id = rb.source_id
@@ -56,6 +56,11 @@ data as (
 ready_data as (
  select refbook_id id from data
  -- сортировка, paging 
+
+ ' 
+   || fhir_sort_to_sql_order(__sort) || 
+ ' 
+
  limit $6
  offset $7
 )
