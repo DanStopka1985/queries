@@ -95,8 +95,8 @@ join cnm.refbook_source rbsc on rbsc.id = rb.source_id
 );
 end;
 $BODY$
-  LANGUAGE plpgsql VOLATILE
-  COST 100;
+  LANGUAGE plpgsql VOLATILE;
+
 
 -- example
 -- select fhir_get_codesystem_by_id(37116)
