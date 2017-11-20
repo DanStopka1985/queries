@@ -85,15 +85,7 @@ return r;
 
 end;
 $BODY$
-  LANGUAGE plpgsql VOLATILE
-  COST 100;
-
-
-
-
-
-
-
+  LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION fhir_search(query json)
   RETURNS json AS
@@ -109,8 +101,6 @@ return (
 
 end;
 $BODY$
-  LANGUAGE plpgsql VOLATILE
-  COST 100;
-
+  LANGUAGE plpgsql VOLATILE;
 
 --select coalesce(get_value_of_param('a=2&b=3&c=345', 'd'), '10')
