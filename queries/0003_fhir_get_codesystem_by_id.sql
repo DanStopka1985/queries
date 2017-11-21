@@ -1,4 +1,4 @@
-﻿CREATE OR REPLACE FUNCTION fhir.fhir_get_codesystem_by_id(cs_id integer)
+﻿CREATE OR REPLACE FUNCTION fhir.fhir_get_codesystem_by_id(cs_id text, csv_id text)
   RETURNS json AS
 $BODY$
 begin
@@ -6,11 +6,13 @@ return (
 
 with 
 
-last_ver as ( -- Беру последнюю версию справочника
+last_ver as ( -- Беру последнюю версию справочника или указанную в csv_id
  select 
   rbv.id
  from cnm.refbook_version rbv 
- where rbv.refbook_id::text = (cs_id)::text
+ where
+  csv_id = '' and rbv.refbook_id::text = (cs_id)::text or
+  csv_id != '' and rbv.refbook_id::text = (cs_id)::text and rbv.id::text = csv_id::text
  order by rbv.id desc limit 1
 ),
 

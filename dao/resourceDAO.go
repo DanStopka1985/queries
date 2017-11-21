@@ -26,6 +26,16 @@ func GetResourceById(w http.ResponseWriter, r *http.Request) {
 
 	CommonReturn(`select fhir_read_resource::jsonb val from fhir.fhir_read_resource('` + string(params) + `');`, w)
 }
+
+func GetResourceHistoryById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	resourceSelect := &ResourceSelect{ResourceType: vars["resourceType"], Id: vars["id"], VersionId: vars["vid"]}
+	params, err := json.Marshal(resourceSelect)
+	P(err)
+
+	CommonReturn(`select fhir_read_resource::jsonb val from fhir.fhir_read_resource('` + string(params) + `');`, w)
+}
+
 /*
 
 func GetResourceHistory(w http.ResponseWriter, r *http.Request) {

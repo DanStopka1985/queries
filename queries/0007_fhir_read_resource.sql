@@ -5,7 +5,7 @@ begin
 return (
 select 
  case 
-  when (query ->> 'resourceType') = 'CodeSystem' then fhir.fhir_get_codesystem_by_id((query ->> 'id')::integer)
+  when (query ->> 'resourceType') = 'CodeSystem' then fhir.fhir_get_codesystem_by_id((query ->> 'id'), (query ->> 'versionId'))
   when (query ->> 'resourceType') = 'ValueSet' then fhir.fhir_get_valueset_by_id((query ->> 'id')::integer)
   else '{}'
  end val
