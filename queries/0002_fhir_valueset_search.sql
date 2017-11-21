@@ -1,6 +1,6 @@
 ﻿--select fhir_search::jsonb val from fhir_search('{"resourceType":"CodeSystem","queryString":"_page=2"}');
 
-CREATE OR REPLACE FUNCTION fhir_codesystem_search(query json)
+CREATE OR REPLACE FUNCTION fhir_valueset_search(query json)
   RETURNS json AS
 $BODY$
 declare _params text;
@@ -71,7 +71,7 @@ select
  ''"resourceType": "Bundle"'' ||
  '',"type": "searchset"'' ||
  '',"total": '' || (select count(1) from data)::text ||
- '',"entry": ['' || string_agg(fhir_get_codesystem_by_id(id)::text, '', '') || '']''
+ '',"entry": ['' || string_agg(fhir_get_valueset_by_id(id)::text, '', '') || '']''
  ''}'' 
 )::json val 
   
