@@ -1,4 +1,4 @@
-﻿CREATE OR REPLACE FUNCTION fhir_get_valueset_by_id(cs_id integer)
+﻿CREATE OR REPLACE FUNCTION fhir.fhir_get_valueset_by_id(cs_id integer)
   RETURNS json AS
 $BODY$
 begin
@@ -36,7 +36,7 @@ select
  ', "compose": {',
     '"include": [',
       '{',
-        '"system": "<base_url>/CodeSystem/' || rb.id || '"',
+        '"system": "' || (select coalesce(text_value, default_text_value) from fhir.settings where code = 'baseURL' limit 1) || '/CodeSystem/' || rb.id || '"',
       '}',
     ']',
   '}',

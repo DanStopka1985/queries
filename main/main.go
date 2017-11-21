@@ -8,9 +8,11 @@ import (
 	_ "github.com/lib/pq"
 	ss "../settings"
 	"../dao"
+	"../loader"
 )
 
 func main() {
+	loader.LoadDbFunctions()
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/nci/fhir/{resourceType}", dao.GetResourceSearchResult)
 	router.HandleFunc("/nci/fhir/{resourceType}/{id}", dao.GetResourceById)

@@ -1,4 +1,4 @@
-﻿CREATE OR REPLACE FUNCTION fhir_get_codesystem_by_id(cs_id integer)
+﻿CREATE OR REPLACE FUNCTION fhir.fhir_get_codesystem_by_id(cs_id integer)
   RETURNS json AS
 $BODY$
 begin

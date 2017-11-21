@@ -1,6 +1,6 @@
 ﻿--select fhir_search::jsonb val from fhir_search('{"resourceType":"CodeSystem","queryString":"_page=2"}');
 
-CREATE OR REPLACE FUNCTION fhir_valueset_search(query json)
+CREATE OR REPLACE FUNCTION fhir.fhir_valueset_search(query json)
   RETURNS json AS
 $BODY$
 declare _params text;
@@ -15,7 +15,7 @@ declare _params text;
         r json;
 begin 
  _params := urldecode_arr(query ->> 'queryString');
- __count := coalesce(get_value_of_param(_params, '_count'), '3') ::integer;
+ __count := coalesce(get_value_of_param(_params, '_count'), (select coalesce(int_value, default_int_value) from fhir.settings where code = 'valuesetSearchCount' limit 1)::text) ::integer;
  __page := coalesce(get_value_of_param(_params, '_page'), '0') ::integer;
  _title := get_value_of_param(_params, 'title');
  __id := get_value_of_param(_params, '_id');
@@ -58,7 +58,7 @@ ready_data as (
  -- сортировка, paging 
 
  ' 
-   || fhir_sort_to_sql_order(__sort) || 
+   || fhir.fhir_sort_to_sql_order(__sort) ||
  ' 
 
  limit $6

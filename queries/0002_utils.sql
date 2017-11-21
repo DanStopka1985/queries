@@ -3,7 +3,7 @@
 -- example 
 -- select get_value_of_param('_page=8&_count=12', '_count') 
 -- result 12
-CREATE OR REPLACE FUNCTION get_value_of_param(params text, key text)
+CREATE OR REPLACE FUNCTION fhir.get_value_of_param(params text, key text)
 RETURNS text as
 $BODY$
 begin
@@ -23,7 +23,7 @@ $BODY$
 -- example
 -- select urldecode_arr('title=%D0%9A')
 -- result "title=К"
-CREATE OR REPLACE FUNCTION urldecode_arr(url text)
+CREATE OR REPLACE FUNCTION fhir.urldecode_arr(url text)
   RETURNS text AS
 $BODY$
 DECLARE ret text;
@@ -61,10 +61,11 @@ END;
 $BODY$
   LANGUAGE plpgsql IMMUTABLE STRICT;
 
-CREATE OR REPLACE FUNCTION fhir_sort_to_sql_order(src text)
+CREATE OR REPLACE FUNCTION fhir.fhir_sort_to_sql_order(src text)
   RETURNS text AS
 $BODY$
  BEGIN
+  if (coalesce(src, '') = '') then return ''; end if;
   return (select 'order by ' || regexp_replace(src, '-([^,]+)', '\1 desc', 'g'));
  END;
 $BODY$
