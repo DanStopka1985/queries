@@ -71,7 +71,7 @@ select
  ''"resourceType": "Bundle"'' ||
  '',"type": "searchset"'' ||
  '',"total": '' || (select count(1) from data)::text ||
- '',"entry": ['' || string_agg(fhir.fhir_get_codesystem_by_id(id)::text, '', '') || '']''
+ '',"entry": ['' || string_agg(fhir.fhir_get_codesystem_by_id(id::text, '''')::text, '', '') || '']''
  ''}'' 
 )::json val 
   
