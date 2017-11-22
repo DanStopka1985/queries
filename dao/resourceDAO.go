@@ -36,7 +36,7 @@ func GetResourceHistoryById(w http.ResponseWriter, r *http.Request) {
 	CommonReturn(`select fhir_read_resource::jsonb val from fhir.fhir_read_resource('` + string(params) + `');`, w)
 }
 
-/*
+
 
 func GetResourceHistory(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -44,9 +44,10 @@ func GetResourceHistory(w http.ResponseWriter, r *http.Request) {
 	params, err := json.Marshal(resourceSelect)
 	P(err)
 
-	CommonReturn(`SET plv8.start_proc = 'plv8_init'; select fhir_resource_history::jsonb val from fhir_resource_history('` + string(params) + `');`, w)
+	CommonReturn(`select fhir_resource_history::jsonb val from fhir.fhir_resource_history('` + string(params) + `');`, w)
 }
 
+/*
 func GetResourceHistoryById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	resourceSelect := &ResourceSelect{ResourceType: vars["resourceType"], Id: vars["id"], VersionId: vars["vid"]}

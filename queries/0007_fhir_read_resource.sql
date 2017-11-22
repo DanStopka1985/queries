@@ -13,8 +13,7 @@ select
 
 end;
 $BODY$
-  LANGUAGE plpgsql VOLATILE
-  COST 100;
+  LANGUAGE plpgsql VOLATILE;
 
 -- example
 -- select fhir_read_resource('{"resourceType":"CodeSystem", "id": "37116"}'::json)
