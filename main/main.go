@@ -18,7 +18,7 @@ func main() {
 	router.HandleFunc("/nci/fhir/{resourceType}/{id}", dao.GetResourceById)
 	router.HandleFunc("/nci/fhir/{resourceType}/{id}/_history/{vid}", dao.GetResourceHistoryById)
 	router.HandleFunc("/nci/fhir/{resourceType}/{id}/_history", dao.GetResourceHistory)
+	router.HandleFunc("/nci/fhir/ValueSet/{id}/$expand", dao.GetExpandValueSetById)
 
-	//router.HandleFunc("/nci/fhir/ValueSet/{id}/$expand", dao.GetExpandValueSetById)
 	log.Fatal(http.ListenAndServe(":" + strconv.Itoa(ss.GetSettings().Port), router))
 }
