@@ -5,12 +5,8 @@ begin
 return (
 
 with 
-/*query as ( 
- select '{"resourceType":"ValueSet","id":"37116","versionId":"37577"}'::json query
-),*/
-
 t as (
- select fhir.fhir_read_resource((query::jsonb || jsonb_build_object('resourceType', 'CodeSystem'))::json) val --from query
+ select fhir.fhir_read_resource((query::jsonb || jsonb_build_object('resourceType', 'CodeSystem'))::json) val
 ),
 
 tt as (
@@ -39,8 +35,6 @@ from ttt
 select 
  fhir.fhir_read_resource((query::jsonb || jsonb_build_object('resourceType', 'ValueSet'))::json)::jsonb ||
  jsonb_build_object('expansion', (select expansion from expansion)) val 
-
-
 );
 
 end;
