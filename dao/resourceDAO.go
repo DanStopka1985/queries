@@ -69,3 +69,20 @@ func PostCodeSystem(w http.ResponseWriter, r *http.Request) {
 
 	CommonReturn(`select fhir_codesystem_create::jsonb val from fhir.fhir_codesystem_create('` + string(bodyString) + `');`, w)
 }
+
+func PutCodeSystem(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+
+	utf8, err := charset.NewReader(r.Body, r.Header.Get("charset"))
+	if err != nil {
+		fmt.Println("Encoding error:", err)
+		return
+	}
+
+	bodyBytes, _ := ioutil.ReadAll(utf8)
+	bodyString := string(bodyBytes)
+
+	println(id)
+	println(bodyString)
+	CommonReturn(`select fhir_codesystem_update::jsonb val from fhir.fhir_codesystem_update(` + id + `::text,'`+ string(bodyString) + `'::json);`, w)
+}
