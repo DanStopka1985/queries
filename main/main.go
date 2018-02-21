@@ -24,8 +24,8 @@ func main() {
 	router.HandleFunc("/nci/fhir/CodeSystem", dao.PostCodeSystem).Methods("POST")
 	router.HandleFunc("/nci/fhir/CodeSystem/{id}", dao.PutCodeSystem).Methods("PUT")
 
-	router.HandleFunc("/nci/fhir/ConceptMap", dao.PostConceptMap).Methods("POST") //it's dummy
-	router.HandleFunc("/nci/fhir/ConceptMap/{id}", dao.DeleteConceptMap).Methods("DELETE") //testing
+	router.HandleFunc("/nci/fhir/ConceptMap", dao.PostConceptMap).Methods("POST")
+	router.HandleFunc("/nci/fhir/ConceptMap/{id}", dao.DeleteConceptMap).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":" + strconv.Itoa(ss.GetSettings().Port), router))
 }
