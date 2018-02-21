@@ -87,7 +87,6 @@ func PutCodeSystem(w http.ResponseWriter, r *http.Request) {
 	CommonReturn(`select fhir_codesystem_update::jsonb val from fhir.fhir_codesystem_update(` + id + `::text,'`+ string(bodyString) + `'::json);`, w)
 }
 
-//dummy
 func PostConceptMap(w http.ResponseWriter, r *http.Request) {
 	utf8, err := charset.NewReader(r.Body, r.Header.Get("charset"))
 	if err != nil {
@@ -97,14 +96,11 @@ func PostConceptMap(w http.ResponseWriter, r *http.Request) {
 
 	bodyBytes, _ := ioutil.ReadAll(utf8)
 	bodyString := string(bodyBytes)
-	bodyString = bodyString + "";
 
-	println("123");
-	CommonReturn(`select '';`, w)
+	CommonReturn(`select fhir_conceptmap_create::jsonb val from fhir.fhir_conceptmap_create('` + string(bodyString) + `');`, w)
 }
 
 func DeleteConceptMap(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	println(456)
 	CommonReturn(`select fhir_conceptmap_delete::jsonb val from fhir.fhir_conceptmap_delete('` + vars["id"] + `'::text);`, w)
 }
